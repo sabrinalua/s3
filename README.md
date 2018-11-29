@@ -1,0 +1,1 @@
+structs for AWS S3 HTTP REST API
