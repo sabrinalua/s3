@@ -1,7 +1,7 @@
 package gos3
 
 type Error struct {
-	Code int  
+	Code string  
 	Message string 
 	RequestId string 
 	HostId string
