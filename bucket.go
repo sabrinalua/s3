@@ -1,4 +1,4 @@
-package gos3 
+package gos3
 
 import (
 	"encoding/xml"
@@ -9,12 +9,14 @@ import (
 type ListBuckets struct {
 	XMLName xml.Name `xml:"http://s3.amazonaws.com/doc/2006-03-01/ ListAllMyBucketsResult" json:"-"`
 	Owner initiator
-	Buckets []Bucket `xml:"Buckets>Bucket"`
+	Buckets []BucketInfo `xml:"Buckets>Bucket"`
 }
 
-type Bucket struct {
-	Name string 
-	CreationDate time.Time
+type BucketInfo struct {
+	// The name of the bucket.
+	Name string `json:"name"`
+	// Date the bucket was created.
+	CreationDate time.Time `json:"creationDate"`
 }
 
 /*https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGETacl.html */
@@ -33,46 +35,63 @@ type BucketLocation struct {
 	Location    string   `xml:",chardata"`
 }
 
-/*https://docs.aws.amazon.com/AmazonS3/latest/API/v2-RESTBucketGET.html */
-type ListObjectsV2Response struct {
-	XMLName xml.Name `xml:"http://s3.amazonaws.com/doc/2006-03-01/ ListBucketResult" json:"-"`
-
-	Name       string
-	Prefix     string
-	StartAfter string `xml:"StartAfter,omitempty"`
-	// When response is truncated (the IsTruncated element value in the response
-	// is true), you can use the key name in this field as marker in the subsequent
-	// request to get next set of objects. Server lists objects in alphabetical
-	// order Note: This element is returned only if you have delimiter request parameter
-	// specified. If response does not include the NextMaker and it is truncated,
-	// you can use the value of the last Key in the response as the marker in the
-	// subsequent request to get the next set of object keys.
-	ContinuationToken     string `xml:"ContinuationToken,omitempty"`
-	NextContinuationToken string `xml:"NextContinuationToken,omitempty"`
-
-	KeyCount  int
-	MaxKeys   int
+// ListBucketV2Result container for listObjects response version 2.
+type ListBucketV2Result struct {
+	// A response can contain CommonPrefixes only if you have
+	// specified a delimiter.
+	CommonPrefixes []CommonPrefix
+	// Metadata about each object returned.
+	Contents  []ObjectInfo
 	Delimiter string
+
+	// Encoding type used to encode object keys in the response.
+	EncodingType string
+
 	// A flag that indicates whether or not ListObjects returned all of the results
 	// that satisfied the search criteria.
 	IsTruncated bool
+	MaxKeys     int64
+	Name        string
 
-	Contents       []Object
-	CommonPrefixes []CommonPrefix
+	// Hold the token that will be sent in the next request to fetch the next group of keys
+	NextContinuationToken string
 
-	// Encoding type used to encode object keys in the response.
-	EncodingType string `xml:"EncodingType,omitempty"`
+	ContinuationToken string
+	Prefix            string
+
+	// FetchOwner and StartAfter are currently not used
+	FetchOwner string
+	StartAfter string
 }
 
-type Object struct {
-	Key          string
-	LastModified time.Time // time string of format "2006-01-02T15:04:05.000Z"
-	ETag         string
-	Size         int64
+// ListBucketResult container for listObjects response.
+type ListBucketResult struct {
+	// A response can contain CommonPrefixes only if you have
+	// specified a delimiter.
+	CommonPrefixes []CommonPrefix
+	// Metadata about each object returned.
+	Contents  []ObjectInfo
+	Delimiter string
 
-	// Owner of the object.
-	Owner initiator
+	// Encoding type used to encode object keys in the response.
+	EncodingType string
 
-	// The class of storage used to store the object.
-	StorageClass string
+	// A flag that indicates whether or not ListObjects returned all of the results
+	// that satisfied the search criteria.
+	IsTruncated bool
+	Marker      string
+	MaxKeys     int64
+	Name        string
+
+	// When response is truncated (the IsTruncated element value in
+	// the response is true), you can use the key name in this field
+	// as marker in the subsequent request to get next set of objects.
+	// Object storage lists objects in alphabetical order Note: This
+	// element is returned only if you have delimiter request
+	// parameter specified. If response does not include the NextMaker
+	// and it is truncated, you can use the value of the last Key in
+	// the response as the marker in the subsequent request to get the
+	// next set of object keys.
+	NextMarker string
+	Prefix     string
 }
